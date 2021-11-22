@@ -11,6 +11,50 @@ import org.junit.Test;
  * TestMatrix for worker 2.
  *
  */
+class Worker extends Thread{
+      
+    double sum(double[] row) {
+        double sum =0;
+        for(int i = 0; i < row.length; i++) {
+           sum = sum + row[i]; 
+        }
+        return sum;   
+    }
+    
+}
+class MultiThreadedSumMatrix implements SumMatrix{
+    
+    private final int n;
+    
+    public MultiThreadedSumMatrix(int n) {
+        this.n = n;
+    }
+    
+    @Override
+    public double sum(double[][] matrix) {
+        // TODO Auto-generated method stub
+        double sum = 0;
+        final int size = matrix.length;
+        final int rowForThread = size / n ;
+        for(int c = 0; c < n-1; c++ ) {
+            Worker th = new Worker();
+            for(int i =0; i < rowForThread; i++) {
+                sum = sum + th.sum(matrix[i]);
+                
+            }
+        }
+        final int didItRow =(n-1) * rowForThread;
+        if (didItRow != size) {
+            Worker th = new Worker();
+            int lostRows = size - didItRow;
+            for(int x = didItRow; x < size; x++) {
+                sum = sum + th.sum(matrix[x]);
+            }
+        }
+        return sum;
+    }
+    
+}
 public class TestMatrix {
 
     /*
@@ -50,7 +94,7 @@ public class TestMatrix {
         System.out.println("BTW: the sum with " + SIZE + "*" + SIZE + " elements is: " + sum);
         long time;
         for (final int threads: new int[] { 1, 2, 3, 8, 16, 32, 100 }) {
-            final SumMatrix sumList = null; // new MultiThreadedSumMatrix(threads);
+            final SumMatrix sumList = new MultiThreadedSumMatrix(threads); // new MultiThreadedSumMatrix(threads);
             time = System.nanoTime();
             assertEquals(sum, sumList.sum(matrix), EXPECTED_DELTA);
             time = System.nanoTime() - time;
